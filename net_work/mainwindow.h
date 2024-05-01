@@ -3,12 +3,12 @@
 
 #include <QMainWindow>
 #include <QTimer>
-#include <Qtime>
+#include <QTime>
 #include <qt_mysql.h>
 #include <QMessageBox>
-#include<QTest>
 #include<QSerialPort>
-#include<qserialportinfo>
+#include <QRegularExpressionValidator>
+#include <QSerialPortInfo>
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -25,14 +25,11 @@ public:
     QTimer *timer;
     QTime time;
     QSqlDatabase db;
-
-
-
+    int Times,lineEditData;
 private slots:
 
 
     void on_save_clicked();
-
 
     void on_openDir_clicked();
 
@@ -53,7 +50,6 @@ private slots:
 
     void on_stop_clicked();
 
-    void on_checkcycle_2_clicked();
 
     void on_sustain_2_clicked();
 
@@ -63,10 +59,37 @@ private slots:
 
     void on_recv_save_btn_clicked();
 
+    void on_recv_clear_btn_clicked();
+
+    void on_checkBox_2_clicked();
+
+    void on_checkBox_clicked();
+
+    void on_checkBox_5_clicked();
+
+    void TimerEvent();
+
+    void serialPort_readyRead();
+
+    void on_checkBox_4_clicked();
+
+    void on_checkBox_6_clicked();
+
+    void on_sendCount_editingFinished();
+
+    void on_checkBox_3_clicked();
+
 private:
     Ui::MainWindow *ui;
     QSerialPort m_serial;
-    int nums=0;
+    QSerialPort rec_serial;
+    int nums=0; //累计发送次数
+    int update_num;
     QTimer *timSend;
+    QTimer *timCount;
+    long int SendByte,ReceByte;//发送、接收字节数
+    QStringList portStringLine;     //端口链表
+    QByteArray Sendtext,Receivetext; //发送、接收缓存区
+
 };
 #endif // MAINWINDOW_H

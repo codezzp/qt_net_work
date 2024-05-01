@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QTimer>
-#include <Qtime>
 //数据库依赖
 #include <qt_mysql.h>
 #include <QVariant>
@@ -23,13 +22,34 @@ MainWindow::MainWindow(QWidget *parent)
     time.setHMS(0,0,0,0);//初始化
     ui->duration->setText(time.toString("hh:mm:ss"));
     connect(timer, SIGNAL(timeout()), this, SLOT(update()));//手动连接槽函数
-    db = sql_connetction();
+    //db = sql_connetction();
 
     on_btnrefresh_2_clicked();
     timSend=new QTimer(this);
+    timCount=new QTimer(this);
+    timCount->start(10);
     connect(timSend,&QTimer::timeout,this,&MainWindow::handleTimeout);
-
-
+    connect(timCount,&QTimer::timeout,this,&MainWindow::TimerEvent);
+    ui->checkBox_2->setCheckState(Qt::Checked);
+    SendByte=ReceByte=0;
+    Times=0;
+    lineEditData=ui->lineInterval->text().toInt();
+    ui->textsend_2->blockSignals(true);
+    timCount->blockSignals(true);
+    //将输入类型限制为5位非负数
+    QRegularExpression regExp( "0|[1-9]\\d{0,4}" );
+    ui->lineInterval->setValidator(new QRegularExpressionValidator(regExp,this));
+    ui->sendCount->setValidator(new QRegularExpressionValidator(regExp,this));
+    //禁止修改文本框
+    ui->lineEdit_2->setReadOnly(true);
+    ui->lineEdit->setReadOnly(true);
+    ui->times->setReadOnly(true);
+    ui->duration->setReadOnly(true);
+    ui->receive_textEdit->setReadOnly(true);
+    connect(&m_serial,&QSerialPort::readyRead,this,&MainWindow::serialPort_readyRead);
+    ui->checkBox_3->setChecked(true);
+    //connect(&rec_serial,&QSerialPort::readyRead,this,[=]{qDebug()<<rec_serial.portName()<<rec_serial.baudRate()<<" "<<rec_serial.dataBits()<<" "<<rec_serial.parity()<<" "<<rec_serial.stopBits();});
+    //connect(&m_serial,&QSerialPort::readyRead,this,[=]{qDebug()<<rec_serial.portName()<<rec_serial.baudRate()<<" "<<rec_serial.dataBits()<<" "<<rec_serial.parity()<<" "<<rec_serial.stopBits();});
 }
 
 MainWindow::~MainWindow()
@@ -38,12 +58,12 @@ MainWindow::~MainWindow()
 }
 
 QSqlDatabase MainWindow::sql_connetction(){
-    //创建数据库连接
+    /*//创建数据库连接
     if(!createConnection()) qDebug()<<("数据库连接失败");
 
         //指定某个数据库连接
     QSqlDatabase db1 = QSqlDatabase::database("connection1");
-    return db1;
+    return db1;*/
 
 }
 void MainWindow::sql_insert(){
@@ -131,15 +151,21 @@ void MainWindow::on_btnrefresh_2_clicked()
     //清空串口名
     ui->cmbportname_3->clear();
     //遍历串口信息
-    foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
-        ui->cmbportname_3->addItem(info.portName());
+    /*foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
+        ui->cmbportname_3->addItem("/dev/"+info.portName());
+    }*/
+    foreach(const QSerialPortInfo &info, QSerialPortInfo::availablePorts())   //通过 QSerialPortInfo 查询 LInux 系统下的可用串口号；forreach 是增强的for循环，适用于循环次数未知的情况
+    {
+        ui->cmbportname_3->addItem("/dev/"+info.portName());
     }
+
     ui->cmbportbaud_3->setCurrentText("9600");
     ui->databits_3->setCurrentText("8");
     ui->cmbportparity_3->setCurrentText("0");
     ui->cmbportstop_3->setCurrentText("1");
-    ui->status->setText("未激活");
+    ui->status->setText("串口列表已刷新");
 }
+
 
 //打开串口
 void MainWindow::on_btnopenport_2_clicked()
@@ -147,22 +173,36 @@ void MainWindow::on_btnopenport_2_clicked()
     //设置端口名
     m_serial.setPortName(ui->cmbportname_3->currentText());
     //设置波特率
-    m_serial.setBaudRate(ui->cmbportbaud_3->currentIndex());
+    m_serial.setBaudRate(ui->cmbportbaud_3->currentText().toInt());
     //设置数据位
     switch(ui->databits_3->currentIndex())
     {
-    case 5: m_serial.setDataBits(QSerialPort::Data5); break;
-    case 6: m_serial.setDataBits(QSerialPort::Data6); break;
-    case 7: m_serial.setDataBits(QSerialPort::Data7); break;
-    case 8: m_serial.setDataBits(QSerialPort::Data8); break;
+    case 5:
+        m_serial.setDataBits(QSerialPort::Data5);
+        break;
+    case 6:
+        m_serial.setDataBits(QSerialPort::Data6);
+        break;
+    case 7:
+        m_serial.setDataBits(QSerialPort::Data7);
+        break;
+    case 8:
+        m_serial.setDataBits(QSerialPort::Data8);
+        break;
     default: break;
     }
     //设置校验位
     switch(ui->cmbportparity_3->currentIndex())
     {
-    case 0: m_serial.setParity(QSerialPort::NoParity); break;
-    case 1: m_serial.setParity(QSerialPort::OddParity); break;
-    case 2: m_serial.setParity(QSerialPort::EvenParity); break;
+    case 0:
+        m_serial.setParity(QSerialPort::NoParity);
+        break;
+    case 1:
+        m_serial.setParity(QSerialPort::OddParity);
+        break;
+    case 2:
+        m_serial.setParity(QSerialPort::EvenParity);
+        break;
     default: break;
     }
     //设置停止位
@@ -172,25 +212,30 @@ void MainWindow::on_btnopenport_2_clicked()
     case 2: m_serial.setStopBits(QSerialPort::TwoStop); break;
     default: break;
     }
-
+    //qDebug()<<m_serial.portName()<<m_serial.baudRate()<<" "<<m_serial.dataBits()<<" "<<m_serial.parity()<<" "<<m_serial.stopBits();
+    //qDebug()<<rec_serial.portName()<<rec_serial.baudRate()<<" "<<rec_serial.dataBits()<<" "<<rec_serial.parity()<<" "<<rec_serial.stopBits();
     m_serial.open(QIODevice::ReadWrite);
-
     if(m_serial.isOpen()){
         ui->status->setText("串口成功打开");
     }
     else{
         ui->status->setText("串口打开失败");
+        QByteArray lasttext;
+        lasttext.append(("open fail，error info: "+m_serial.errorString().toStdString()+"\n"));
+        ui->receive_textEdit->setText(lasttext);
+        m_serial.close();
     }
 }
-
 
 //关闭串口
 void MainWindow::on_btncloseport_2_clicked()
 {
     m_serial.close();
-
     if(m_serial.isOpen()){
         ui->status->setText("串口关闭失败");
+        QByteArray lasttext;
+        lasttext.append(("open fail，error info: "+m_serial.errorString().toStdString()+"\n"));
+        ui->receive_textEdit->setText(lasttext);
     }
     else{
         ui->status->setText("串口已关闭");
@@ -198,23 +243,50 @@ void MainWindow::on_btncloseport_2_clicked()
 
 }
 
-//清空报文
+//重置
 void MainWindow::on_btncleartext_2_clicked()
 {
     ui->textsend_2->clear();
+    ui->times->setText("0");
+    time.setHMS(0,0,0,0);//初始化
+    ui->duration->setText(time.toString("hh:mm:ss"));
+    nums=0;
+    ui->lineEdit->setText("0");
+    ui->lineEdit_2->setText("0");
+    SendByte=ReceByte=0;
+
+
 }
 
-//发送信息
+//发送报文
 void MainWindow::on_send_clicked()
 {
 
     if(m_serial.isOpen()){
+        if(ui->sustain_2->isChecked()==true){
+            lineEditData=ui->lineInterval->text().toInt();
+            timCount->blockSignals(false);
+        }
+        if(ui->sustain_2->isChecked()==false&&ui->checkcycle_2->isChecked()==true){
+            lineEditData=1000;
+            timCount->blockSignals(false);
+        }
+        if(ui->checkcycle_2->isChecked()==true){
+            ui->sendCount->setText(QString::number(ui->sendCount->text().toInt()-1));
+        }
         QByteArray array1 = ui->textsend_2->toPlainText().toUtf8();
-        update();
+        if(ui->checkBox->checkState()==Qt::Checked)
+            array1  = QByteArray::fromHex(array1);
         m_serial.write(array1);
-        sql_insert();//写入数据库
+        SendByte+=array1.length();
+        //sql_insert();//写入数据库
         nums++;
         ui->times->setText(QString::number(nums));
+        ui->lineEdit->setText(QString::number(SendByte));
+        qDebug()<<m_serial.portName()<<m_serial.baudRate()<<" "<<m_serial.dataBits()<<" "<<m_serial.parity()<<" "<<m_serial.stopBits();
+    }
+    else{
+        ui->status->setText("串口未打开");
     }
 }
 
@@ -223,12 +295,16 @@ void MainWindow::on_send_clicked()
 //监视文本框
 void MainWindow::on_textsend_2_textChanged()
 {
+    //周期发送复选框
     bool valuesustain_2=ui->sustain_2->isChecked();
+    //发送次数复选框
     bool valuetimes=ui->checkcycle_2->isChecked();
     int time=ui->lineInterval->text().toInt();
     int times=ui->sendCount->text().toInt();
+    //判断串口是否打开，之后判断是否周期发送
     if(m_serial.isOpen()){
         if(valuesustain_2){
+            //阻塞信号发送，避免周期过长时程序崩溃
             ui->textsend_2->blockSignals(true);
             timSend->start(time);
             if(valuetimes){
@@ -236,8 +312,12 @@ void MainWindow::on_textsend_2_textChanged()
                     times--;
                     ui->sendCount->setText(QString::number(times));
                     QByteArray array1 = ui->textsend_2->toPlainText().toUtf8();
+                    if(ui->checkBox->checkState()==Qt::Checked)
+                        array1  = QByteArray::fromHex(array1);
                     m_serial.write(array1);
                     sql_insert();//写入数据库
+                    SendByte+=array1.length();
+                    ui->lineEdit->setText(QString::number(SendByte));
                     nums++;
                     ui->times->setText(QString::number(nums));
                 }
@@ -246,6 +326,8 @@ void MainWindow::on_textsend_2_textChanged()
                 QByteArray array1 = ui->textsend_2->toPlainText().toUtf8();
                 m_serial.write(array1);
                 sql_insert();//写入数据库
+                SendByte+=array1.length();
+                ui->lineEdit->setText(QString::number(SendByte));
                 nums++;
                 ui->times->setText(QString::number(nums));
             }
@@ -258,24 +340,16 @@ void MainWindow::on_textsend_2_textChanged()
 void MainWindow::on_stop_clicked()
 {
     restart();//重置计时器
+
+    timCount->blockSignals(true);
     m_serial.close();
-    ui->status->setText("中止发送");
+    ui->status->setText("中止发送,串口已关闭");
 }
 
-//周期发送复选框未勾选，则发送次数复选框不能勾选
-void MainWindow::on_checkcycle_2_clicked()
-{
-    bool valuesustain_2=ui->sustain_2->isChecked();
-    if(!valuesustain_2){
-        ui->checkcycle_2->setChecked(false);
-    }
-
-}
 
 //周期发送时禁止修改周期
 void MainWindow::on_sustain_2_clicked()
 {
-    ui->checkcycle_2->setChecked(false);
     bool valuesustain_2=ui->sustain_2->isChecked();
     if(valuesustain_2){
         //对输入的值大小的限制，小于10会弹出对话框提示
@@ -312,5 +386,145 @@ void MainWindow::on_recv_save_btn_clicked()
     if (!fileName.empty()) {
         QMessageBox::information(this, tr("提示"), tr("保存成功"));
     }
+}
+
+
+
+void MainWindow::on_recv_clear_btn_clicked()
+{
+    ui->receive_textEdit->clear();
+}
+
+
+
+
+
+void MainWindow::on_checkBox_clicked()
+{
+    ui->checkBox_2->setCheckState(Qt::Unchecked);
+    ui->checkBox->setCheckState(Qt::Checked);
+}
+
+
+void MainWindow::on_checkBox_2_clicked()
+{
+    ui->checkBox_2->setCheckState(Qt::Checked);
+    ui->checkBox->setCheckState(Qt::Unchecked);
+}
+
+
+void MainWindow::on_checkBox_5_clicked()
+{
+    bool state=ui->checkBox_5->isChecked();
+    if(state){
+        ui->textsend_2->blockSignals(false);
+    }
+    else{
+        ui->textsend_2->blockSignals(true);
+    }
+}
+void MainWindow::TimerEvent()                                       //定时事件，10ms
+{
+
+    int times=ui->sendCount->text().toInt();
+    Times+=10;
+    if(ui->checkBox_5->isChecked()==false)
+    {
+        if(Times>=lineEditData)                                     //定时发送
+        {
+            if(ui->sustain_2->isChecked()==true){
+                update_num+=lineEditData;
+                if(ui->checkcycle_2->isChecked()==true){
+                    if(times>0){
+                        MainWindow::on_send_clicked();
+                    }
+                    else{
+                        timCount->blockSignals(true);
+                    }
+                }
+                else{
+                    MainWindow::on_send_clicked();
+                }
+                if(update_num>1000){
+                    //更新计时器
+                    int n=update_num/1000;
+                    for(int i=0;i<n;i++){
+                        update();
+                    }
+                    update_num-=n*1000;
+                }
+            }
+            else if(ui->checkcycle_2->isChecked()==true){
+                if(times>0){
+                    MainWindow::on_send_clicked();
+                    update();
+                }
+                else{
+                    timCount->blockSignals(true);
+                }
+            }
+            Times=0;
+        }
+    }
+
+}
+
+void MainWindow::serialPort_readyRead()                             //串口接收
+{
+    if(ui->checkBox_3->isChecked()==true){
+        int i,length;
+        QByteArray lasttext;
+        lasttext=ui->receive_textEdit->toPlainText().toUtf8();
+        Receivetext = m_serial.readAll();
+        qDebug()<<Receivetext;
+        ReceByte+=Receivetext.length();
+        ui->lineEdit_2->setText(QString::number(ReceByte));
+        if(ui->checkBox_4->checkState()==Qt::Checked)
+        {
+            Receivetext=Receivetext.toHex().toUpper();          //字符串转十六进制
+            length=Receivetext.length();
+            for(i=0;i<=length/2;i++)
+            {
+                Receivetext.insert((2+3*i),' ');                //插入空格字符串
+            }
+        }
+        lasttext=lasttext.append(Receivetext);
+        ui->receive_textEdit->setText(lasttext);
+    }
+    m_serial.clear(QSerialPort::AllDirections);
+}
+
+
+
+void MainWindow::on_checkBox_4_clicked()    //十六进制接收
+{
+    ui->checkBox_6->setCheckState(Qt::Unchecked);
+    ui->checkBox_4->setCheckState(Qt::Checked);
+    ui->checkBox_3->setCheckState(Qt::Unchecked);
+}
+
+
+void MainWindow::on_checkBox_6_clicked()
+{
+    ui->checkBox_3->setCheckState(Qt::Unchecked);
+    ui->checkBox_4->setCheckState(Qt::Unchecked);
+    ui->checkBox_6->setCheckState(Qt::Checked);
+
+}
+
+
+void MainWindow::on_sendCount_editingFinished()
+{
+    lineEditData=ui->lineInterval->text().toInt();
+}
+
+
+
+
+void MainWindow::on_checkBox_3_clicked()
+{
+    ui->checkBox_3->setCheckState(Qt::Checked);
+    ui->checkBox_4->setCheckState(Qt::Unchecked);
+    ui->checkBox_6->setCheckState(Qt::Unchecked);
 }
 
