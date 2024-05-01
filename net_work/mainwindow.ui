@@ -23,6 +23,20 @@
       <layout class="QGridLayout" name="gridLayout_12">
        <item row="0" column="0">
         <layout class="QGridLayout" name="gridLayout_9">
+         <item row="2" column="0">
+          <widget class="QPushButton" name="btnrefresh_2">
+           <property name="text">
+            <string>刷新串口</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QPushButton" name="btncloseport_2">
+           <property name="text">
+            <string>关闭串口</string>
+           </property>
+          </widget>
+         </item>
          <item row="0" column="0">
           <widget class="QPushButton" name="btnopenport_2">
            <property name="text">
@@ -30,28 +44,7 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
-          <widget class="QPushButton" name="pushButton">
-           <property name="text">
-            <string>扫描串口</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QPushButton" name="btncloseport_2">
-           <property name="text">
-            <string>关闭串口</string>
-           </property>
-          </widget>
-         </item>
          <item row="3" column="0">
-          <widget class="QPushButton" name="btnrefresh_2">
-           <property name="text">
-            <string>刷新串口</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
           <layout class="QGridLayout" name="gridLayout_6">
            <item row="2" column="1">
             <widget class="QComboBox" name="cmbportbaud_3">
@@ -161,7 +154,7 @@
             </widget>
            </item>
            <item row="5" column="0">
-            <widget class="QLabel" name="label_23">
+            <widget class="QLabel" name="label_25">
              <property name="text">
               <string>串口名</string>
              </property>
@@ -182,7 +175,7 @@
             <item>
              <widget class="QCheckBox" name="checkBox_4">
               <property name="text">
-               <string>字节接收</string>
+               <string>十六进制接收</string>
               </property>
              </widget>
             </item>
@@ -190,6 +183,13 @@
              <widget class="QCheckBox" name="checkBox_3">
               <property name="text">
                <string>文本接收</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_6">
+              <property name="text">
+               <string>暂停接收</string>
               </property>
              </widget>
             </item>
@@ -216,7 +216,7 @@
             <item>
              <widget class="QCheckBox" name="checkBox">
               <property name="text">
-               <string>字节发送</string>
+               <string>十六进制</string>
               </property>
              </widget>
             </item>
@@ -238,6 +238,13 @@
              <widget class="QCheckBox" name="checkcycle_2">
               <property name="text">
                <string>次数启用</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_5">
+              <property name="text">
+               <string>文本框监视</string>
               </property>
              </widget>
             </item>
@@ -364,20 +371,34 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="5">
-          <widget class="QLineEdit" name="times"/>
-         </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_9">
+         <item row="4" column="1">
+          <widget class="QLineEdit" name="lineEdit">
            <property name="text">
-            <string>发送次数：</string>
+            <string>0</string>
            </property>
           </widget>
          </item>
-         <item row="1" column="3">
-          <widget class="QLabel" name="label">
+         <item row="1" column="5">
+          <widget class="QLineEdit" name="duration"/>
+         </item>
+         <item row="4" column="3">
+          <widget class="QLabel" name="label_4">
            <property name="text">
-            <string>累计发送时间：</string>
+            <string>接收字节：</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="5">
+          <widget class="QLineEdit" name="lineEdit_2">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="lineInterval">
+           <property name="text">
+            <string>0</string>
            </property>
           </widget>
          </item>
@@ -388,34 +409,40 @@
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
-          <widget class="QLineEdit" name="lineInterval"/>
+         <item row="1" column="3">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>累计发送时间：</string>
+           </property>
+          </widget>
          </item>
-         <item row="1" column="5">
-          <widget class="QLineEdit" name="duration"/>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="sendCount">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="5">
+          <widget class="QLineEdit" name="times">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
          </item>
          <item row="1" column="0">
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>发送次数：</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
           <widget class="QLabel" name="label_10">
            <property name="text">
             <string>发送间隔：</string>
            </property>
           </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLineEdit" name="sendCount"/>
-         </item>
-         <item row="4" column="3">
-          <widget class="QLabel" name="label_4">
-           <property name="text">
-            <string>接收字节：</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1">
-          <widget class="QLineEdit" name="lineEdit"/>
-         </item>
-         <item row="4" column="5">
-          <widget class="QLineEdit" name="lineEdit_2"/>
          </item>
         </layout>
        </item>
@@ -424,7 +451,7 @@
          <item row="7" column="2">
           <widget class="QPushButton" name="btncleartext_2">
            <property name="text">
-            <string>清空报文</string>
+            <string>重置</string>
            </property>
           </widget>
          </item>
@@ -485,7 +512,7 @@
      <x>0</x>
      <y>0</y>
      <width>1260</width>
-     <height>25</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>
