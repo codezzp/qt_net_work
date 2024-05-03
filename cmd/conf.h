@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <sstream>
 #include <iostream>
+#include "command.h"
 
 class ConfCore {
 public:
@@ -40,7 +41,7 @@ public:
 
         file << content;
         file.close();
-
+        Command::CurrentFileName = modifiedFilePath;
         return true;
     }
     static void Start(std::string filePath, std::string content) {
