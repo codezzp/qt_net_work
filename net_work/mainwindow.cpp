@@ -263,14 +263,17 @@ void MainWindow::on_send_clicked()
 {
 
     if(m_serial.isOpen()){
+        //是否周期发送
         if(ui->sustain_2->isChecked()==true){
             lineEditData=ui->lineInterval->text().toInt();
             timCount->blockSignals(false);
         }
+        //次数是否启用
         if(ui->sustain_2->isChecked()==false&&ui->checkcycle_2->isChecked()==true){
             lineEditData=1000;
             timCount->blockSignals(false);
         }
+        //更新剩余发送次数
         if(ui->checkcycle_2->isChecked()==true){
             ui->sendCount->setText(QString::number(ui->sendCount->text().toInt()-1));
         }
@@ -403,6 +406,10 @@ void MainWindow::on_checkBox_clicked()
 {
     ui->checkBox_2->setCheckState(Qt::Unchecked);
     ui->checkBox->setCheckState(Qt::Checked);
+    QByteArray lasttext;
+    temp_buffer=ui->textsend_2->toPlainText().toUtf8();
+    lasttext=ui->textsend_2->toPlainText().toUtf8().toHex().toUpper();
+    ui->textsend_2->setText(lasttext);
 }
 
 
@@ -410,6 +417,9 @@ void MainWindow::on_checkBox_2_clicked()
 {
     ui->checkBox_2->setCheckState(Qt::Checked);
     ui->checkBox->setCheckState(Qt::Unchecked);
+    if(temp_buffer.size()!=0){
+        ui->textsend_2->setText(temp_buffer);
+    }
 }
 
 
@@ -471,7 +481,7 @@ void MainWindow::TimerEvent()                                       //定时事�
 
 void MainWindow::serialPort_readyRead()                             //串口接收
 {
-    if(ui->checkBox_3->isChecked()==true){
+    if(ui->checkBox_6->isChecked()==false){
         int i,length;
         QByteArray lasttext;
         lasttext=ui->receive_textEdit->toPlainText().toUtf8();
@@ -526,5 +536,11 @@ void MainWindow::on_checkBox_3_clicked()
     ui->checkBox_3->setCheckState(Qt::Checked);
     ui->checkBox_4->setCheckState(Qt::Unchecked);
     ui->checkBox_6->setCheckState(Qt::Unchecked);
+}
+
+
+void MainWindow::on_recv_pause_btn_clicked()
+{
+    ui->checkBox_6->setCheckState(Qt::Checked);
 }
 

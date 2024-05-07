@@ -79,6 +79,8 @@ private slots:
 
     void on_checkBox_3_clicked();
 
+    void on_recv_pause_btn_clicked();
+
 private:
     Ui::MainWindow *ui;
     QSerialPort m_serial;
@@ -90,6 +92,7 @@ private:
     long int SendByte,ReceByte;//发送、接收字节数
     QStringList portStringLine;     //端口链表
     QByteArray Sendtext,Receivetext; //发送、接收缓存区
+    QByteArray temp_buffer;
 
 };
 #endif // MAINWINDOW_H
