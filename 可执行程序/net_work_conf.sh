@@ -7,7 +7,7 @@ if [ ! -f "net_work.tar.gz" ]; then
 fi
 
 # 解压 net_work.tar.gz 文件到 /usr/local 目录下（强制覆盖）
-tar -xzf net_work.tar.gz -C /usr/local/
+tar -xvf net_work.tar.gz -C /usr/local/
 
 # 修改 net_work 文件夹权限为 777
 chmod 777 /usr/local/net_work
