@@ -66,6 +66,8 @@ https://blog.csdn.net/qq_17351161/article/details/89607458
 重启虚拟机
 ```
 ### 4.2.2 配置
+```！！！可执行程序文件里的文件都得在一个目录下```
+#### 解压缩方式安装
 使用 root 用户赋予 net_work_conf.sh执行权限
 列如 
  ```shell
@@ -86,6 +88,13 @@ root@zzp-virtual-machine:/# start_net_work.sh
 ```
 ---(随便那个目录下都可以执行，配置到了/usr/local/bin）
 (必须切换到root用户， 目前串口通信需要root权限)
+```
+#### dpkg安装
+```
+dkpg -x network.deb /usr/local/network --后面的是安装路径，你可以自己指定 建议/path/network   ,path可以随便修改
+```
+```
+无论是dpkg安装还是解压缩安装都可以通过 ./net_work_conf.sh 自动安装 , start_net_work.sh 全局启动 ---root用户
 ```
 # 5.功能介绍
 
@@ -168,3 +177,6 @@ options:
   -p PORT, --port PORT  Specify the serial port. E.g., COM3 or /dev/ttyUSB0
   -f FILE, --file FILE  Specify the file path for matching content.
 ```
+# 8 运行效果
+界面：https://url.v.tencent.com/3TZLMy9P 点击链接
+运行视频：https://url.v.tencent.com/23EPHkxF 点击链接，打开「腾讯智能创作平台」在线查看，原画质极速审阅视频。

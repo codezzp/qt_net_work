@@ -6,6 +6,13 @@ if [ -x "/usr/local/net_work/net_work" ]; then
     # 调用 net_work 程序
     /usr/local/net_work/net_work
     echo "net_work 启动脚本执行完毕"
+
+elif [ -x "/usr/local/net_work/network" ]; then
+    echo "network program found."
+    # 调用 net_work 程序
+    /usr/local/net_work/network
+    echo "net_work 启动脚本执行完毕"
+
 else
     echo "net_work program not found."
     exit 1

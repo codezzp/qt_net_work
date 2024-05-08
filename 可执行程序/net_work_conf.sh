@@ -1,10 +1,7 @@
 #!/bin/bash
 
 # 检查是否存在 net_work.tar.gz 文件
-if [ ! -f "net_work.tar.gz" ]; then
-    echo "Error: net_work.tar.gz 文件不存在"
-    exit 1
-fi
+if [  -f "net_work.tar.gz" ]; then
 
 # 解压 net_work.tar.gz 文件到 /usr/local 目录下（强制覆盖）
 tar -xvf net_work.tar.gz -C /usr/local/
@@ -12,6 +9,21 @@ tar -xvf net_work.tar.gz -C /usr/local/
 # 修改 net_work 文件夹权限为 777
 chmod 777 /usr/local/net_work
 
+echo "解压和权限修改完成"
+
+elif [ -f "network.deb" ];    then
+#安装到指定目录
+dpkg -x network.deb /usr/local/net_work
+
+else 
+    echo "Error: net_work.tar.gz or network.deb 文件不存在"
+    exit 1
+      
+fi
+
+
+# 修改 net_work 文件夹权限为 777
+chmod 777 /usr/local/net_work
 echo "解压和权限修改完成"
 
 #配置启动脚本到全局环境
